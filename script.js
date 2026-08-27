@@ -88,8 +88,8 @@ function topicNameFromUrl(url) {
     .replace(/-/g, " ");
 }
 
-// Fisher–Yates shuffle so every link is drawn exactly once, in random order,
-// with no repeats — this replaces the Python script's `used_links` loop.
+// Fisher–Yates shuffle so every link is generated exactly once, in random
+// order, with no repeats — this replaces the Python script's `used_links` loop.
 function shuffledDeck() {
   const deck = [...links];
   for (let i = deck.length - 1; i > 0; i--) {
@@ -100,70 +100,60 @@ function shuffledDeck() {
 }
 
 let deck = shuffledDeck();
-let drawnCount = 0;
+let generatedCount = 0;
 
-const drawBtn = document.getElementById("drawBtn");
-const ticketEl = document.getElementById("ticket");
-const counterEl = document.getElementById("counter");
-const drum = document.getElementById("drum");
-const drumCount = document.getElementById("drumCount");
-const stubList = document.getElementById("stubList");
+const generateBtn = document.getElementById("generateBtn");
+const currentEl = document.getElementById("current");
+const progressEl = document.getElementById("progress");
+const historyList = document.getElementById("historyList");
 
-function updateCounter() {
+function updateProgress() {
   const remaining = deck.length;
-  drumCount.textContent = remaining;
-  counterEl.textContent =
+  progressEl.textContent =
     remaining > 0
-      ? `${remaining} ticket${remaining === 1 ? "" : "s"} left in the drum`
-      : "The drum is empty";
+      ? `${remaining} topic${remaining === 1 ? "" : "s"} remaining`
+      : "All topics generated";
 }
 
-function drawTicket() {
+function generateTopic() {
   if (deck.length === 0) return;
 
-  drum.classList.remove("spin");
-  void drum.offsetWidth; // restart animation
-  drum.classList.add("spin");
-
   const url = deck.pop();
-  drawnCount += 1;
+  generatedCount += 1;
   const topic = topicNameFromUrl(url);
 
-  ticketEl.dataset.empty = "false";
-  ticketEl.classList.remove("ticket--drawn");
-  void ticketEl.offsetWidth;
-  ticketEl.classList.add("ticket--drawn");
-  ticketEl.innerHTML = `
-    <p class="ticket__serial">TICKET NO. ${String(drawnCount).padStart(3, "0")}</p>
-    <p class="ticket__topic">${topic}</p>
-    <a class="ticket__open" href="${url}" target="_blank" rel="noopener noreferrer">Open revision sheet ↗</a>
+  currentEl.dataset.empty = "false";
+  currentEl.innerHTML = `
+    <p class="current__label">Topic ${generatedCount}</p>
+    <p class="current__topic">${topic}</p>
+    <a class="current__link" href="${url}" target="_blank" rel="noopener noreferrer">Open PDF ↗</a>
   `;
 
   const li = document.createElement("li");
-  li.innerHTML = `<span class="no">#${String(drawnCount).padStart(3, "0")}</span><a href="${url}" target="_blank" rel="noopener noreferrer">${topic}</a>`;
-  stubList.prepend(li);
+  li.innerHTML = `<span class="no">#${String(generatedCount).padStart(2, "0")}</span><a href="${url}" target="_blank" rel="noopener noreferrer">${topic}</a>`;
+  historyList.prepend(li);
 
-  updateCounter();
+  updateProgress();
 
   if (deck.length === 0) {
-    drawBtn.disabled = true;
-    drawBtn.textContent = "Out of tickets — restart?";
+    generateBtn.disabled = true;
+    generateBtn.textContent = "All topics done — reset?";
   }
 }
 
-drawBtn.addEventListener("click", () => {
-  if (drawBtn.disabled) {
+generateBtn.addEventListener("click", () => {
+  if (generateBtn.disabled) {
     deck = shuffledDeck();
-    drawnCount = 0;
-    stubList.innerHTML = "";
-    ticketEl.dataset.empty = "true";
-    ticketEl.innerHTML = `<p class="ticket__hint">No ticket drawn yet</p>`;
-    drawBtn.disabled = false;
-    drawBtn.textContent = "Draw a ticket";
-    updateCounter();
+    generatedCount = 0;
+    historyList.innerHTML = "";
+    currentEl.dataset.empty = "true";
+    currentEl.innerHTML = `<p class="current__placeholder">Press generate to get your first topic.</p>`;
+    generateBtn.disabled = false;
+    generateBtn.textContent = "Generate topic";
+    updateProgress();
     return;
   }
-  drawTicket();
+  generateTopic();
 });
 
-updateCounter();
+updateProgress();

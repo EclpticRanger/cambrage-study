@@ -3,41 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Revision Raffle — GCSE Maths</title>
+<title>Maths Revision Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="booth">
-    <header class="booth__header">
-      <p class="eyebrow">Past Paper Penguin</p>
-      <h1>Revision Raffle</h1>
-      <p class="sub">Pull a ticket. Whatever topic it names, that's what you revise next.</p>
+  <main class="wrap">
+    <header class="head">
+      <p class="eyebrow">Past Paper Penguin · GCSE Maths</p>
+      <h1>Revision Generator</h1>
+      <p class="sub">Generate a random topic sheet, work through it, then generate the next one.</p>
     </header>
 
-    <div class="counter" id="counter">80 tickets in the drum</div>
+    <section class="current" id="current" data-empty="true">
+      <p class="current__placeholder">Press generate to get your first topic.</p>
+    </section>
 
-    <div class="stage">
-      <div class="drum" id="drum" aria-hidden="true">
-        <span class="drum__count" id="drumCount">80</span>
-      </div>
-
-      <div class="ticket-slot">
-        <div class="ticket" id="ticket" data-empty="true">
-          <p class="ticket__hint">No ticket drawn yet</p>
-        </div>
-      </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="generateBtn">Generate topic</button>
     </div>
 
-    <button class="draw-btn" id="drawBtn">Draw a ticket</button>
+    <p class="progress" id="progress">80 topics remaining</p>
 
-    <div class="stub-rail" aria-label="Drawn tickets">
-      <p class="stub-rail__label">Drawn so far</p>
-      <ol class="stub-list" id="stubList"></ol>
-    </div>
-  </div>
+    <section class="history">
+      <p class="history__label">Completed / generated</p>
+      <ol class="history__list" id="historyList"></ol>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
