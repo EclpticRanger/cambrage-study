@@ -103,13 +103,20 @@ let deck = shuffledDeck();
 let generatedCount = 0;
 
 const generateBtn = document.getElementById("generateBtn");
-const currentEl = document.getElementById("current");
-const progressEl = document.getElementById("progress");
+const resetBtn = document.getElementById("resetBtn");
+const cardEl = document.getElementById("card");
+const counterEl = document.getElementById("counter");
+const dial = document.getElementById("dial");
+const dialCount = document.getElementById("dialCount");
 const historyList = document.getElementById("historyList");
+const modalOverlay = document.getElementById("modalOverlay");
+const modalCancel = document.getElementById("modalCancel");
+const modalConfirm = document.getElementById("modalConfirm");
 
-function updateProgress() {
+function updateCounter() {
   const remaining = deck.length;
-  progressEl.textContent =
+  dialCount.textContent = remaining;
+  counterEl.textContent =
     remaining > 0
       ? `${remaining} topic${remaining === 1 ? "" : "s"} remaining`
       : "All topics generated";
@@ -118,42 +125,70 @@ function updateProgress() {
 function generateTopic() {
   if (deck.length === 0) return;
 
+  dial.classList.remove("spin");
+  void dial.offsetWidth; // restart animation
+  dial.classList.add("spin");
+
   const url = deck.pop();
   generatedCount += 1;
   const topic = topicNameFromUrl(url);
 
-  currentEl.dataset.empty = "false";
-  currentEl.innerHTML = `
-    <p class="current__label">Topic ${generatedCount}</p>
-    <p class="current__topic">${topic}</p>
-    <a class="current__link" href="${url}" target="_blank" rel="noopener noreferrer">Open PDF ↗</a>
+  cardEl.dataset.empty = "false";
+  cardEl.classList.remove("card--drawn");
+  void cardEl.offsetWidth;
+  cardEl.classList.add("card--drawn");
+  cardEl.innerHTML = `
+    <p class="card__serial">TOPIC ${String(generatedCount).padStart(3, "0")}</p>
+    <p class="card__topic">${topic}</p>
+    <a class="card__open" href="${url}" target="_blank" rel="noopener noreferrer">Open PDF ↗</a>
   `;
 
   const li = document.createElement("li");
-  li.innerHTML = `<span class="no">#${String(generatedCount).padStart(2, "0")}</span><a href="${url}" target="_blank" rel="noopener noreferrer">${topic}</a>`;
+  li.innerHTML = `<span class="no">#${String(generatedCount).padStart(3, "0")}</span><a href="${url}" target="_blank" rel="noopener noreferrer">${topic}</a>`;
   historyList.prepend(li);
 
-  updateProgress();
+  updateCounter();
 
   if (deck.length === 0) {
-    generateBtn.disabled = true;
-    generateBtn.textContent = "All topics done — reset?";
+    generateBtn.hidden = true;
+    resetBtn.hidden = false;
   }
 }
 
-generateBtn.addEventListener("click", () => {
-  if (generateBtn.disabled) {
-    deck = shuffledDeck();
-    generatedCount = 0;
-    historyList.innerHTML = "";
-    currentEl.dataset.empty = "true";
-    currentEl.innerHTML = `<p class="current__placeholder">Press generate to get your first topic.</p>`;
-    generateBtn.disabled = false;
-    generateBtn.textContent = "Generate topic";
-    updateProgress();
-    return;
-  }
-  generateTopic();
+function openResetModal() {
+  modalOverlay.hidden = false;
+  modalConfirm.focus();
+}
+
+function closeResetModal() {
+  modalOverlay.hidden = true;
+  resetBtn.focus();
+}
+
+function performReset() {
+  deck = shuffledDeck();
+  generatedCount = 0;
+  historyList.innerHTML = "";
+  cardEl.dataset.empty = "true";
+  cardEl.classList.remove("card--drawn");
+  cardEl.innerHTML = `<p class="card__hint">Press generate to get your first topic</p>`;
+  generateBtn.hidden = false;
+  resetBtn.hidden = true;
+  updateCounter();
+  closeResetModal();
+}
+
+generateBtn.addEventListener("click", generateTopic);
+resetBtn.addEventListener("click", openResetModal);
+modalCancel.addEventListener("click", closeResetModal);
+modalConfirm.addEventListener("click", performReset);
+
+// Close on backdrop click or Escape — still requires an explicit confirm to actually reset.
+modalOverlay.addEventListener("click", (e) => {
+  if (e.target === modalOverlay) closeResetModal();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !modalOverlay.hidden) closeResetModal();
 });
 
-updateProgress();
+updateCounter();

@@ -5,33 +5,53 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Maths Revision Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <main class="wrap">
-    <header class="head">
-      <p class="eyebrow">Past Paper Penguin · GCSE Maths</p>
+  <div class="booth">
+    <header class="booth__header">
+      <p class="eyebrow">Past Paper Penguin</p>
       <h1>Revision Generator</h1>
       <p class="sub">Generate a random topic sheet, work through it, then generate the next one.</p>
     </header>
 
-    <section class="current" id="current" data-empty="true">
-      <p class="current__placeholder">Press generate to get your first topic.</p>
-    </section>
+    <div class="counter" id="counter">78 topics remaining</div>
+
+    <div class="stage">
+      <div class="dial" id="dial" aria-hidden="true">
+        <span class="dial__count" id="dialCount">78</span>
+      </div>
+
+      <div class="card-slot">
+        <div class="card" id="card" data-empty="true">
+          <p class="card__hint">Press generate to get your first topic</p>
+        </div>
+      </div>
+    </div>
 
     <div class="actions">
       <button class="btn btn--primary" id="generateBtn">Generate topic</button>
+      <button class="btn btn--reset" id="resetBtn" hidden>Start over</button>
     </div>
 
-    <p class="progress" id="progress">80 topics remaining</p>
+    <div class="history-rail" aria-label="Generated topics">
+      <p class="history-rail__label">Generated so far</p>
+      <ol class="history-list" id="historyList"></ol>
+    </div>
+  </div>
 
-    <section class="history">
-      <p class="history__label">Completed / generated</p>
-      <ol class="history__list" id="historyList"></ol>
-    </section>
-  </main>
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+      <p id="modalTitle" class="modal__title">Reset your progress?</p>
+      <p id="modalDesc" class="modal__desc">This clears everything you've generated and shuffles a fresh set of 78 topics. You can't undo it.</p>
+      <div class="modal__actions">
+        <button class="btn btn--ghost" id="modalCancel">Cancel</button>
+        <button class="btn btn--danger" id="modalConfirm">Yes, reset</button>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
