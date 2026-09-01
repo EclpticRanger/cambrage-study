@@ -1,3 +1,4 @@
+// The full set of revision sheet question/answer pairs.
 const combinedLinks = [
   {
     question: "https://pastpaperpenguin.com/wp-content/uploads/2025/09/Calculations-with-negatives-decimals-etc-NC-S25.pdf",
@@ -315,13 +316,15 @@ function topicNameFromUrl(url) {
   const file = url.split("/").pop().replace(/\.pdf$/i, "");
   return file
     .replace(/-(NC-)?S25b?$/i, "")
+    .replace(/-ANSb?$/i, "")
     .replace(/-/g, " ");
 }
 
-// Fisher–Yates shuffle so every link is generated exactly once, in random
-// order, with no repeats — this replaces the Python script's `used_links` loop.
+// Fisher–Yates shuffle so every topic pair is generated exactly once, in
+// random order, with no repeats — this replaces the Python script's
+// `used_links` loop.
 function shuffledDeck() {
-  const deck = [...links];
+  const deck = [...combinedLinks];
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -359,9 +362,9 @@ function generateTopic() {
   void dial.offsetWidth; // restart animation
   dial.classList.add("spin");
 
-  const url = deck.pop();
+  const pair = deck.pop();
   generatedCount += 1;
-  const topic = topicNameFromUrl(url);
+  const topic = topicNameFromUrl(pair.question);
 
   cardEl.dataset.empty = "false";
   cardEl.classList.remove("card--drawn");
@@ -370,11 +373,14 @@ function generateTopic() {
   cardEl.innerHTML = `
     <p class="card__serial">TOPIC ${String(generatedCount).padStart(3, "0")}</p>
     <p class="card__topic">${topic}</p>
-    <a class="card__open" href="${url}" target="_blank" rel="noopener noreferrer">Open PDF ↗</a>
+    <div class="card__links">
+      <a class="card__open" href="${pair.question}" target="_blank" rel="noopener noreferrer">Open PDF ↗</a>
+      <a class="card__open card__open--answers" href="${pair.answer}" target="_blank" rel="noopener noreferrer">Open Answers ↗</a>
+    </div>
   `;
 
   const li = document.createElement("li");
-  li.innerHTML = `<span class="no">#${String(generatedCount).padStart(3, "0")}</span><a href="${url}" target="_blank" rel="noopener noreferrer">${topic}</a>`;
+  li.innerHTML = `<span class="no">#${String(generatedCount).padStart(3, "0")}</span><span class="history-links"><a href="${pair.question}" target="_blank" rel="noopener noreferrer">${topic}</a> · <a href="${pair.answer}" target="_blank" rel="noopener noreferrer">Answers</a></span>`;
   historyList.prepend(li);
 
   updateCounter();

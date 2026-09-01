@@ -160,6 +160,13 @@ h1 {
   color: var(--ink);
 }
 
+.card__links {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .card__open {
   display: inline-block;
   font-family: 'IBM Plex Mono', monospace;
@@ -177,6 +184,19 @@ h1 {
 .card__open:hover {
   transform: rotate(0deg);
   background: var(--stamp-dark);
+}
+
+.card__open--answers {
+  background: transparent;
+  color: var(--stamp);
+  border: 1.5px solid var(--stamp);
+  transform: rotate(2deg);
+}
+
+.card__open--answers:hover {
+  background: var(--stamp);
+  color: var(--card-bg);
+  transform: rotate(0deg);
 }
 
 .card--drawn {
@@ -293,6 +313,10 @@ h1 {
   display: flex;
   justify-content: space-between;
   gap: 10px;
+}
+
+.history-links {
+  text-align: right;
 }
 
 .history-list li a {
