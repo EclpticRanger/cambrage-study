@@ -18,11 +18,11 @@
       <p class="sub">Generate a random topic sheet, work through it, then generate the next one.</p>
     </header>
 
-    <div class="counter" id="counter">77 topics remaining</div>
+    <div class="counter" id="counter">Topics remaining</div>
 
     <div class="stage">
       <div class="dial" id="dial" aria-hidden="true">
-        <span class="dial__count" id="dialCount">77</span>
+        <span class="dial__count" id="dialCount">0</span>
       </div>
 
       <div class="card-slot">
@@ -34,6 +34,7 @@
 
     <div class="actions">
       <button class="btn btn--primary" id="generateBtn">Generate topic</button>
+      <!-- Hidden attribute removed so it always shows -->
       <button class="btn btn--reset" id="resetBtn">Start over</button>
     </div>
 
@@ -46,7 +47,7 @@
   <div class="modal-overlay" id="modalOverlay" hidden>
     <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
       <p id="modalTitle" class="modal__title">Reset your progress?</p>
-      <p id="modalDesc" class="modal__desc">This clears everything you've generated and shuffles a fresh set of 80 topics. You can't undo it.</p>
+      <p id="modalDesc" class="modal__desc">This clears everything you've generated and shuffles a fresh set of topics. You can't undo it.</p>
       <div class="modal__actions">
         <button class="btn btn--ghost" id="modalCancel">Cancel</button>
         <button class="btn btn--danger" id="modalConfirm">Yes, reset</button>
@@ -54,6 +55,8 @@
     </div>
   </div>
 
+  <!-- Load data first, then load the script -->
+  <script src="data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

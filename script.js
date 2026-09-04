@@ -1,6 +1,3 @@
-// We declare combinedLinks as an empty array first.
-let combinedLinks = [];
-
 // Turn a PDF url into a readable topic name
 function topicNameFromUrl(url) {
   const file = url.split("/").pop().replace(/\.pdf$/i, "");
@@ -12,6 +9,7 @@ function topicNameFromUrl(url) {
 
 // Fisher–Yates shuffle
 function shuffledDeck() {
+  // combinedLinks comes from data.js!
   const deck = [...combinedLinks];
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -83,7 +81,8 @@ function loadState() {
 
     if (deck.length === 0) {
       generateBtn.hidden = true;
-      resetBtn.hidden = false;
+    } else {
+      generateBtn.hidden = false;
     }
   } else {
     // First time visiting or storage cleared
@@ -137,7 +136,6 @@ function generateTopic() {
 
   updateCounter();
 
-  // REMOVED the resetBtn logic here. Just hide generateBtn if empty.
   if (deck.length === 0) {
     generateBtn.hidden = true;
   }
@@ -164,14 +162,13 @@ function performReset() {
   cardEl.dataset.empty = "true";
   cardEl.classList.remove("card--drawn");
   cardEl.innerHTML = `<p class="card__hint">Press generate to get your first topic</p>`;
-  
-  // Make sure generate button comes back, and REMOVED resetBtn.hidden = true
   generateBtn.hidden = false;
   
   updateCounter();
   closeResetModal();
 }
 
+// Event Listeners
 generateBtn.addEventListener("click", generateTopic);
 resetBtn.addEventListener("click", openResetModal);
 modalCancel.addEventListener("click", closeResetModal);
@@ -184,25 +181,5 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !modalOverlay.hidden) closeResetModal();
 });
 
-
-// --- NEW: Fetch JSON and initialize ---
-async function initApp() {
-  try {
-    // Replace 'links.json' with the actual path to your file
-    const response = await fetch('links.json');
-    if (!response.ok) throw new Error("Network response was not ok");
-    
-    // Parse the JSON data into our global array
-    combinedLinks = await response.json();
-    
-    // Now that we have the data, we can safely load state and start the app
-    loadState();
-    
-  } catch (error) {
-    console.error("Error loading links data:", error);
-    cardEl.innerHTML = `<p class="card__hint" style="color: red;">Failed to load topics. Please check your connection or file path.</p>`;
-  }
-}
-
-// Start the initialization process
-initApp();
+// Start the app when the page loads
+loadState();
