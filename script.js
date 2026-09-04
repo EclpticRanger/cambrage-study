@@ -1,5 +1,4 @@
-// The full set of revision sheet question/answer pairs.
-const combinedLinks = [
+/*
   {
     question: "https://pastpaperpenguin.com/wp-content/uploads/2025/09/Calculations-with-negatives-decimals-etc-NC-S25.pdf",
     answer: "https://pastpaperpenguin.com/wp-content/uploads/2025/09/Calculations-with-negatives-decimals-etc-NC-S25-ANS.pdf"
@@ -308,7 +307,9 @@ const combinedLinks = [
     question: "https://pastpaperpenguin.com/wp-content/uploads/2025/09/Venn-Diagrams-S25.pdf",
     answer: "https://pastpaperpenguin.com/wp-content/uploads/2025/09/Venn-Diagrams-S25-ANS.pdf"
   }
-];
+]; */
+
+let combinedLinks = [];
 
 // Turn a PDF url into a readable topic name, e.g.
 // ".../HCF-and-LCM-S25.pdf" -> "HCF and LCM"
@@ -332,8 +333,11 @@ function shuffledDeck() {
   return deck;
 }
 
-let deck = shuffledDeck();
+let deck = [];
 let generatedCount = 0;
+let generatedTopics = [];
+
+const STORAGE_KEY = "maths-revision-generator-state";
 
 const generateBtn = document.getElementById("generateBtn");
 const resetBtn = document.getElementById("resetBtn");
@@ -346,6 +350,8 @@ const modalOverlay = document.getElementById("modalOverlay");
 const modalCancel = document.getElementById("modalCancel");
 const modalConfirm = document.getElementById("modalConfirm");
 
+generateBtn.disabled = true;
+
 function updateCounter() {
   const remaining = deck.length;
   dialCount.textContent = remaining;
@@ -353,6 +359,58 @@ function updateCounter() {
     remaining > 0
       ? `${remaining} topic${remaining === 1 ? "" : "s"} remaining`
       : "All topics generated";
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ deck, generatedCount, generatedTopics }));
+}
+
+function renderTopic(pair, animate = false) {
+  const topic = topicNameFromUrl(pair.question);
+
+  cardEl.dataset.empty = "false";
+  cardEl.classList.remove("card--drawn");
+  if (animate) void cardEl.offsetWidth;
+  if (animate) cardEl.classList.add("card--drawn");
+  cardEl.innerHTML = `
+    <p class="card__serial">TOPIC ${String(generatedCount).padStart(3, "0")}</p>
+    <p class="card__topic">${topic}</p>
+    <div class="card__links">
+      <a class="card__open" href="${pair.question}" target="_blank" rel="noopener noreferrer">Open PDF ↗</a>
+      <a class="card__open card__open--answers" href="${pair.answer}" target="_blank" rel="noopener noreferrer">Open Answers ↗</a>
+    </div>
+  `;
+}
+
+function renderHistory() {
+  historyList.innerHTML = "";
+  generatedTopics.forEach((pair, index) => {
+    const topic = topicNameFromUrl(pair.question);
+    const number = index + 1;
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="no">#${String(number).padStart(3, "0")}</span><span class="history-links"><a href="${pair.question}" target="_blank" rel="noopener noreferrer">${topic}</a> · <a href="${pair.answer}" target="_blank" rel="noopener noreferrer">Answers</a></span>`;
+    historyList.prepend(li);
+  });
+}
+
+function restoreState(topics) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!saved || !Array.isArray(saved.deck) || !Array.isArray(saved.generatedTopics)) return false;
+
+    const validTopics = new Set(topics.map((topic) => `${topic.question}|${topic.answer}`));
+    const savedTopics = [...saved.deck, ...saved.generatedTopics];
+    if (savedTopics.some((topic) => !topic || !validTopics.has(`${topic.question}|${topic.answer}`))) return false;
+
+    deck = saved.deck;
+    generatedTopics = saved.generatedTopics;
+    generatedCount = generatedTopics.length;
+    renderHistory();
+    if (generatedTopics.length > 0) renderTopic(generatedTopics[generatedTopics.length - 1]);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 function generateTopic() {
@@ -364,26 +422,12 @@ function generateTopic() {
 
   const pair = deck.pop();
   generatedCount += 1;
-  const topic = topicNameFromUrl(pair.question);
-
-  cardEl.dataset.empty = "false";
-  cardEl.classList.remove("card--drawn");
-  void cardEl.offsetWidth;
-  cardEl.classList.add("card--drawn");
-  cardEl.innerHTML = `
-    <p class="card__serial">TOPIC ${String(generatedCount).padStart(3, "0")}</p>
-    <p class="card__topic">${topic}</p>
-    <div class="card__links">
-      <a class="card__open" href="${pair.question}" target="_blank" rel="noopener noreferrer">Open PDF ↗</a>
-      <a class="card__open card__open--answers" href="${pair.answer}" target="_blank" rel="noopener noreferrer">Open Answers ↗</a>
-    </div>
-  `;
-
-  const li = document.createElement("li");
-  li.innerHTML = `<span class="no">#${String(generatedCount).padStart(3, "0")}</span><span class="history-links"><a href="${pair.question}" target="_blank" rel="noopener noreferrer">${topic}</a> · <a href="${pair.answer}" target="_blank" rel="noopener noreferrer">Answers</a></span>`;
-  historyList.prepend(li);
+  generatedTopics.push(pair);
+  renderTopic(pair, true);
+  renderHistory();
 
   updateCounter();
+  saveState();
 
   if (deck.length === 0) {
     generateBtn.hidden = true;
@@ -404,13 +448,14 @@ function closeResetModal() {
 function performReset() {
   deck = shuffledDeck();
   generatedCount = 0;
+  generatedTopics = [];
   historyList.innerHTML = "";
   cardEl.dataset.empty = "true";
   cardEl.classList.remove("card--drawn");
   cardEl.innerHTML = `<p class="card__hint">Press generate to get your first topic</p>`;
   generateBtn.hidden = false;
-  resetBtn.hidden = true;
   updateCounter();
+  saveState();
   closeResetModal();
 }
 
@@ -427,4 +472,31 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !modalOverlay.hidden) closeResetModal();
 });
 
-updateCounter();
+async function loadTopics() {
+  try {
+    const response = await fetch("topics.json");
+    if (!response.ok) throw new Error(`Could not load topics.json (${response.status})`);
+
+    const topics = await response.json();
+    if (!Array.isArray(topics) || topics.length === 0 || topics.some((topic) => !topic.question || !topic.answer)) {
+      throw new Error("topics.json does not contain valid topic pairs");
+    }
+
+    combinedLinks = topics;
+    if (!restoreState(topics)) deck = shuffledDeck();
+    generateBtn.disabled = false;
+    updateCounter();
+    if (deck.length === 0) {
+      generateBtn.hidden = true;
+      resetBtn.hidden = false;
+    }
+  } catch (error) {
+    cardEl.dataset.empty = "false";
+    cardEl.innerHTML = `<p class="card__hint">Unable to load topics. Check that topics.json is available, then refresh.</p>`;
+    counterEl.textContent = "Topics unavailable";
+    dialCount.textContent = "!";
+    console.error(error);
+  }
+}
+
+loadTopics();
